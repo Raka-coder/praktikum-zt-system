@@ -1,0 +1,35 @@
+meta {
+  name: 03 PUT nilai kelas diampu
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/nilai/{{nilaiIdOwn}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  X-Device-ID: DEV-DOSEN-01
+}
+
+auth:bearer {
+  token: {{dosenToken}}
+}
+
+body:json {
+  {
+    "angka": 90
+  }
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("huruf otomatis A", function () {
+    expect(res.getBody().data.huruf).to.equal("A");
+  });
+}

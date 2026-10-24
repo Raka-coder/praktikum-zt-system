@@ -1,0 +1,38 @@
+# Opsional — satu container menjalankan gateway + service nilai + service transkrip.
+# Jalankan:  docker compose up --build -d
+# Gateway:   http://127.0.0.1:${HOST_GATEWAY_PORT:-3000}
+#
+# Catatan: bila port 3000 di host sudah dipakai (mis. Docker/Dokploy), jalankan
+#   HOST_GATEWAY_PORT=4000 docker compose up --build -d
+
+services:
+  zts:
+    build: .
+    container_name: sistem-nilai-zts
+    environment:
+      PORT_GATEWAY: 3000
+      PORT_NILAI: 3001
+      PORT_TRANSKRIP: 3002
+      BIND_HOST: 0.0.0.0
+      DB_PATH: /app/db/sistem_nilai.db
+      JWT_SECRET: ${JWT_SECRET:-zts-demo-jwt-secret-2026-ganti-di-produksi-0f9a7c1e}
+      ACCESS_TOKEN_TTL: 10m
+      SERVICE_TOKEN_TTL: 5m
+      REFRESH_TOKEN_TTL_DAYS: 1
+      GATEWAY_SECRET: ${GATEWAY_SECRET:-zts-demo-gateway-secret-2026-4b2d8e6a}
+      SERVICE_CLIENT_ID: nilai-service
+      SERVICE_CLIENT_SECRET: ${SERVICE_CLIENT_SECRET:-nilai-service-secret-demo-2026}
+      JAM_MULAI: ${JAM_MULAI:-7}
+      JAM_SELESAI: ${JAM_SELESAI:-21}
+      TZ: Asia/Jakarta
+      GATEWAY_URL: http://127.0.0.1:3000
+      NILAI_URL: http://127.0.0.1:3001
+      TRANSKRIP_URL: http://127.0.0.1:3002
+    ports:
+      - "${HOST_GATEWAY_PORT:-3000}:3000"
+    volumes:
+      - zts-db:/app/db
+    restart: unless-stopped
+
+volumes:
+  zts-db:

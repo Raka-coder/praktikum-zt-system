@@ -1,0 +1,28 @@
+meta {
+  name: 04 Finalisasi kelas
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/kelas/{{kelasKode}}/finalisasi
+  body: none
+  auth: bearer
+}
+
+headers {
+  X-Device-ID: DEV-DOSEN-01
+}
+
+auth:bearer {
+  token: {{dosenToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("sinkron transkrip berhasil", function () {
+    expect(res.getBody().sinkron.ok).to.equal(true);
+  });
+}

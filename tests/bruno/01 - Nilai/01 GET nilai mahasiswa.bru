@@ -1,0 +1,32 @@
+meta {
+  name: 01 GET nilai (mahasiswa)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/nilai
+  body: none
+  auth: bearer
+}
+
+headers {
+  X-Device-ID: DEV-MHS-01
+}
+
+auth:bearer {
+  token: {{mhsToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("hanya nilai milik sendiri", function () {
+    const rows = res.getBody().data;
+    expect(rows.length).to.be.greaterThan(0);
+    rows.forEach(function (row) {
+      expect(String(row.nim)).to.equal("2024001");
+    });
+  });
+}

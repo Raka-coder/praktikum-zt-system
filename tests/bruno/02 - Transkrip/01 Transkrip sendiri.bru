@@ -1,0 +1,28 @@
+meta {
+  name: 01 Transkrip NIM sendiri
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/transkrip/{{nimSelf}}
+  body: none
+  auth: bearer
+}
+
+headers {
+  X-Device-ID: DEV-MHS-01
+}
+
+auth:bearer {
+  token: {{mhsToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("transkrip sudah tersinkron", function () {
+    expect(res.getBody().jumlah).to.be.greaterThan(0);
+  });
+}

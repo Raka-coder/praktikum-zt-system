@@ -1,0 +1,36 @@
+meta {
+  name: 02 Login mahasiswa 2024001
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Device-ID: DEV-MHS-01
+}
+
+body:json {
+  {
+    "nim": "2024001",
+    "password": "Mhs123!"
+  }
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("role mahasiswa", function () {
+    expect(res.getBody().user.role).to.equal("mahasiswa");
+  });
+}
+
+script:post-response {
+  bru.setVar("mhsToken", res.body.access_token);
+}

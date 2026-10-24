@@ -1,0 +1,35 @@
+meta {
+  name: 04 Token service
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/auth/service
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "client_id": "{{serviceClientId}}",
+    "client_secret": "{{serviceClientSecret}}"
+  }
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("role service", function () {
+    expect(res.getBody().role).to.equal("service");
+  });
+}
+
+script:post-response {
+  bru.setVar("serviceToken", res.body.access_token);
+}

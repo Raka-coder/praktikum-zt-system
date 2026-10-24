@@ -1,39 +1,106 @@
-# Sistem Nilai Zero Trust
+# Sistem Nilai Zero Trust - Praktikum Zero Trust Security
 
-Tugas Praktikum Individu — **Keamanan Informasi (KP70065004)**, Informatika Universitas Siliwangi.
+![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-47%2F47%20passing-brightgreen)
+![SQLite](https://img.shields.io/badge/SQLite-better--sqlite3-003B57?logo=sqlite&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
 
-Implementasi *zero trust* pada level aplikasi: satu **API Gateway (PEP)** di depan dua **service (Resource)**, dengan **Policy Engine**, verifikasi device, jam akses, audit log, dan token terpisah untuk service.
+Tugas Praktikum Individu — **Keamanan Informasi (KP70065004)**.
 
-> *Never trust, always verify.* Setiap request — termasuk panggilan antar-service — diperiksa ulang.
+Implementasi *zero trust* pada level aplikasi: satu **API Gateway (PEP)** di depan
+dua **service (Resource)**, dengan **Policy Engine**, verifikasi device, jam akses,
+audit log, dan token terpisah untuk service.
+
+> *Never trust, always verify.* Setiap request — termasuk panggilan antar-service —
+> diperiksa ulang.
 
 ---
 
-## 1. Arsitektur
+## Daftar isi
 
+1. [Clone & setup](#1-clone--setup)
+2. [Arsitektur](#2-arsitektur)
+3. [Menjalankan](#3-menjalankan)
+4. [Akun & device](#4-akun--device-seed)
+5. [Endpoint](#5-endpoint)
+6. [Alur penting](#6-alur-penting)
+7. [Pengujian](#7-pengujian)
+8. [Bruno](#8-bruno)
+9. [Audit log](#9-audit-log)
+10. [Struktur folder](#10-struktur-folder)
+11. [Kontrol keamanan](#11-kontrol-keamanan)
+12. [Troubleshooting](#12-troubleshooting)
+13. [Docker](#13-docker-opsional)
+
+---
+
+## 1. Clone & setup
+
+```bash
+git clone https://github.com/Raka-coder/praktikum-zt-system.git
+cd praktikum-zts
+npm install
 ```
-                     ┌───────────────────────────┐
-  Client ───────────▶│  API Gateway :3000        │◀── policy.js (Policy Engine)
-  (Postman / curl)   │  = PEP (+ PE / PA)        │
-  Bearer + X-Device  │                           │───▶ audit_log (allow & deny)
-                     └──────┬─────────────┬──────┘
-               X-Gateway    │             │  X-Gateway-Secret
-                 -Secret    ▼             ▼
-                  ┌───────────────┐  ┌──────────────────┐
-                  │ Service Nilai │  │ Service Transkrip│
-                  │   :3001       │  │   :3002          │
-                  └───────┬───────┘  └────────▲─────────┘
-                          │ POST /transkrip/sinkron
-                          │ (token service, LEWAT GATEWAY lagi)
-                          └──────────▶ Gateway ────────┘
-                                          │
-                                    ┌─────▼──────┐
-                                    │  SQLite    │ (satu DB bersama)
-                                    └────────────┘
+
+Salin konfigurasi (file `.env` sudah di-gitignore, jangan commit):
+
+```bash
+cp .env.example .env
+```
+
+Isi secret dengan string acak:
+
+```bash
+openssl rand -hex 32   # untuk JWT_SECRET dan GATEWAY_SECRET
+openssl rand -hex 24   # untuk SERVICE_CLIENT_SECRET
+```
+
+Inisialisasi database & data demo (idempoten):
+
+```bash
+npm run seed
+```
+
+Jalankan sistem:
+
+```bash
+npm start
+```
+
+Cek sistem hidup:
+
+```bash
+curl http://127.0.0.1:3000/health
+# {"status":"ok","service":"gateway"}
+```
+
+> Catatan port: `.env` bawaan repo memakai **PORT_GATEWAY=3100** karena port 3000
+> di komputer pengembang dipakai layanan lain (Docker/Dokploy). Di komputer yang
+> port 3000-nya bebas, ubah `PORT_GATEWAY=3000` dan `GATEWAY_URL` ikut disamakan.
+> Service tetap di 3001/3002 sesuai soal.
+
+---
+
+## 2. Arsitektur
+
+```mermaid
+flowchart LR
+  Client["Client<br/>(Bruno / curl)<br/>Bearer + X-Device"] -->|"HTTP"| GW["API Gateway :3000<br/>= PEP (+ PE / PA)"]
+
+  Policy["policy.js<br/>(Policy Engine)"] <--> GW
+  GW --> Audit[("audit_log<br/>(allow & deny)")]
+
+  GW -->|"X-Gateway-Secret"| SvcNilai["Service Nilai<br/>:3001"]
+  GW -->|"X-Gateway-Secret"| SvcTranskrip["Service Transkrip<br/>:3002"]
+
+  SvcNilai -->|"POST /transkrip/sinkron<br/>(token service, LEWAT GATEWAY lagi)"| GW
+
+  GW --> DB[("SQLite<br/>(satu DB bersama)")]
 ```
 
 | Komponen | Port | Peran NIST SP 800-207 | Kode |
 |---|---|---|---|
-| API Gateway | 3000 (di repo ini `.env` memakai **3100**, lihat §3) | PEP | `gateway/server.js` |
+| API Gateway | 3000 (`3100` di dev ini) | PEP | `gateway/server.js` |
 | Policy Engine / PA | — | PE / PA | `gateway/policy.js`, `gateway/routes/auth.js` |
 | Service Nilai | 3001 | Resource | `services/nilai/` |
 | Service Transkrip | 3002 | Resource | `services/transkrip/` |
@@ -42,23 +109,10 @@ Implementasi *zero trust* pada level aplikasi: satu **API Gateway (PEP)** di dep
 
 ---
 
-## 2. Prasyarat
-
-- Node.js **20+** (diuji pada Node 24)
-- npm
-- Tidak butuh database server (SQLite via `better-sqlite3`)
-
-```bash
-npm install
-```
-
----
-
 ## 3. Menjalankan
 
 ```bash
-cp .env.example .env     # sekali saja (file .env sudah disertakan untuk demo)
-npm run seed             # isi data awal (idempoten: menghapus lalu mengisi ulang)
+npm run seed             # isi data awal (idempoten: hapus lalu isi ulang)
 npm start                # gateway + service nilai + service transkrip sekaligus
 ```
 
@@ -77,21 +131,6 @@ Cek cepat:
 curl http://127.0.0.1:3000/health
 ```
 
-### Catatan port
-
-`.env` bawaan repo ini memakai **PORT_GATEWAY=3100** karena port 3000 di komputer pengembang sudah dipakai layanan lain (Docker/Dokploy) sehingga request ke `127.0.0.1:3000` dibelokkan ke container tersebut. Di komputer yang port 3000-nya bebas, cukup ubah:
-
-```env
-PORT_GATEWAY=3000
-GATEWAY_URL=http://127.0.0.1:3000
-```
-
-Service tetap di 3001/3002 sesuai soal. Semua contoh di README memakai variabel berikut agar tidak perlu edit:
-
-```bash
-GW=http://127.0.0.1:3100     # sesuaikan dengan PORT_GATEWAY di .env
-```
-
 Menjalankan terpisah (tiga terminal):
 
 ```bash
@@ -102,7 +141,7 @@ npm run transkrip
 
 ---
 
-## 4. Akun & Device (seed)
+## 4. Akun & device (seed)
 
 | Username / NIM | Role | Password | Device ID | Keterangan |
 |---|---|---|---|---|
@@ -113,7 +152,8 @@ npm run transkrip
 | `2024002` | mahasiswa | `Mhs123!` | `DEV-MHS-02` | Terdaftar IF-101-A |
 | `2024003` | mahasiswa | `Mhs123!` | `DEV-MHS-03` | Terdaftar IF-102-B |
 
-Service client: `nilai-service` / lihat `SERVICE_CLIENT_SECRET` di `.env` (hex acak, di-hash bcrypt saat `npm run seed`).
+Service client: `nilai-service` / lihat `SERVICE_CLIENT_SECRET` di `.env`
+(hex acak, di-hash bcrypt saat `npm run seed`).
 
 Kelas: `IF-101-A` (Keamanan Informasi, dosen01), `IF-102-B` (Pemrograman Web, dosen02).
 
@@ -138,8 +178,8 @@ Password disimpan sebagai bcrypt hash; secret service juga di-hash.
 | lainnya | — | — | **default deny** |
 
 `:id` kelas menerima id numerik **atau** kode (`IF-101-A`).
-Semua endpoint selain `/auth/*` wajib `Authorization: Bearer <access>` dan (untuk user) `X-Device-ID`.
-Setiap keputusan allow/deny ditulis ke `audit_log`.
+Semua endpoint selain `/auth/*` wajib `Authorization: Bearer <access>` dan
+(untuk user) `X-Device-ID`. Setiap keputusan allow/deny ditulis ke `audit_log`.
 
 ---
 
@@ -154,7 +194,8 @@ curl -s -X POST $GW/auth/login \
   -d '{"username":"dosen01","password":"Dosen123!"}'
 ```
 
-Access token 10 menit (`sub`, `role`, `nim`/`username`), refresh token 1 hari (disimpan sebagai SHA-256).
+Access token 10 menit (`sub`, `role`, `nim`/`username`), refresh token 1 hari
+(disimpan sebagai SHA-256).
 
 ### 6.2 Dosen mengubah nilai → finalisasi → transkrip
 
@@ -199,7 +240,8 @@ JAM_MULAI=0
 JAM_SELESAI=0      # rentang kosong → semua perubahan ditolak
 ```
 
-Restart `npm start`, lalu `PUT /nilai/1` → `403 perubahan nilai hanya diizinkan pukul 00.00–00.00 (di luar jam akses)`.
+Restart `npm start`, lalu `PUT /nilai/1` →
+`403 perubahan nilai hanya diizinkan pukul 00.00–00.00 (di luar jam akses)`.
 Kembalikan ke `7` dan `21` setelah demo.
 
 ---
@@ -212,7 +254,8 @@ Kembalikan ke `7` dan `21` setelah demo.
 npm test
 ```
 
-`tests/e2e.sh` menyalakan sistem dengan DB terpisah (`db/test-e2e.db`), lalu menguji **47 assertion**:
+`tests/e2e.sh` menyalakan sistem dengan DB terpisah (`db/test-e2e.db`), lalu
+menguji **47 assertion**:
 
 - login benar/salah, device salah, token invalid/kedaluwarsa
 - token service, kredensial service salah
@@ -226,13 +269,11 @@ npm test
 
 Contoh keluaran: `== Hasil: 47/47 lulus ==`.
 
-### Postman / Bruno
+### Postman
 
-Panduan langkah demi langkah (termasuk koleksi Bruno siap pakai dan alur untuk direkam): **[TUTORIAL-API.md](TUTORIAL-API.md)**.
-
-### Postman (ringkas)
-
-Import `tests/postman_collection.json`, jalankan folder **00 - Auth** lebih dulu (menyimpan token ke collection variable), lalu folder lain. `baseUrl` default `http://127.0.0.1:3100`.
+Import `tests/postman_collection.json`, jalankan folder **00 - Auth** lebih dulu
+(menyimpan token ke collection variable), lalu folder lain.
+`baseUrl` default `http://127.0.0.1:3000`.
 
 ### Manual (skenario 03-RULES §8)
 
@@ -255,7 +296,74 @@ Import `tests/postman_collection.json`, jalankan folder **00 - Auth** lebih dulu
 
 ---
 
-## 8. Struktur folder
+## 8. Bruno
+
+Koleksi Bruno (sumber utama pengujian manual) ada di **`tests/collections-bruno/`** (file `.bru` native).
+
+### 8.1 Buka koleksi
+
+1. Install Bruno (<https://www.usebruno.com/download>).
+2. **Open Collection** → pilih folder `tests/collections-bruno`.
+3. Pilih environment **environment** (kanan atas).
+4. Jalankan request dari atas ke bawah: folder **01-Auth & Device Verification**
+   dulu (menyimpan `dosenToken`/`mhsToken`/`accessToken`), lalu folder lain.
+
+### 8.2 Jalankan lewat CLI (opsional)
+
+```bash
+npx @usebruno/cli run tests/collections-bruno -e Local
+```
+
+### 8.3 Alur yang diuji (prinsip zero trust)
+
+| Folder | Request | Harapan |
+|---|---|---|
+| 00-Setup & Environment | Health Cek Server | 200 |
+| 01-Auth & Device Verification | Login Dosen | 200, `dosenToken` tersimpan |
+| | Login Mahasiswa | 200, `mhsToken` tersimpan |
+| 02-Least Privilege: Dosen | GET Nilai Kelas Sendiri (Filtered) | 200 |
+| | Ubah Nilai Kelas Sendiri (Allow) | 200 |
+| | Ubah Nilai Kelas Orang Lain (Deny) | 403 |
+| 03-Context Verification | Ubah Nilai Di Luar Jam (Deny) | 403 (set `.env` 0/0 dulu) |
+| 04-Inter-Service Communication | Finalisasi Kelas (Allow) | 200, `sinkron.ok=true` |
+| 05-Least Privilege: Mahasiswa | Lihat Transkrip Sendiri (Allow) | 200 |
+| | Lihat Transkrip Teman (Deny) | 403 |
+| 06-Service Security & Audit | Akses Langsung ke Port Service (Deny) | 403 |
+| | Akses Langsung dengan Secret Tapi Tanpa Token (Deny) | 401/403 |
+
+> Folder 04 memfinalisasi IF-101-A. Jalankan dari kondisi bersih
+> (`npm run seed`) agar tidak 403 `kelas sudah difinalisasi`.
+
+### 8.4 Catatan koleksi
+
+- `tests/collections-bruno/` = sumber utama, file `.bru` native yang selalu diperbarui.
+- `tests/exports-postman-yml/` = snapshot ekspor terakhir (YML) untuk dokumentasi/migrasi; **jangan** dipakai untuk testing aktif.
+- Buka folder `tests/collections-bruno/` langsung dari aplikasi Bruno, tanpa import/export.
+
+### 8.5 Variabel environment
+
+| Variable | Sumber |
+|---|---|
+| `accessToken` | diset oleh Login Dosen |
+| `dosenToken` | diset oleh Login Dosen |
+| `mhsToken` | diset oleh Login Mahasiswa |
+| `GATEWAY_SECRET` | dibaca dari `process.env` (Bruno) |
+
+---
+
+## 9. Audit log
+
+```bash
+npm run audit          # 15 baris terakhir
+npm run audit -- 50    # 50 baris
+npm run audit -- deny  # hanya penolakan
+```
+
+Setiap keputusan allow/deny tercatat: subjek, endpoint, device, alasan, IP.
+
+---
+
+## 10. Struktur folder
 
 ```
 ├── README.md
@@ -287,16 +395,19 @@ Import `tests/postman_collection.json`, jalankan folder **00 - Auth** lebih dulu
 │       ├── server.js
 │       ├── middleware/{gatewaySecret,verifyToken}.js
 │       └── routes/transkrip.js
-├── scripts/start-all.js
+├── scripts/
+│   ├── start-all.js
+│   └── audit.js
 ├── tests/
 │   ├── e2e.sh
-│   └── postman_collection.json
-└── docs/                     # PRD, arsitektur, rules, schema
+│   ├── postman_collection.json
+│   └── collections-bruno/                # koleksi Bruno (opencollection)
+│   └── result-bruno-yml/                 # hasil koleksi Bruno (manual dari uji pada Bruno)
 ```
 
 ---
 
-## 9. Keputusan desain & kontrol keamanan
+## 11. Kontrol keamanan
 
 | Kontrol | Implementasi |
 |---|---|
@@ -310,24 +421,28 @@ Import `tests/postman_collection.json`, jalankan folder **00 - Auth** lebih dulu
 | Audit | Satu baris per keputusan (`allow`/`deny`) berisi subjek, endpoint, device, alasan, IP |
 | Anti-spoof | `X-Gateway-Secret` dari client selalu **ditimpa** gateway saat proxy |
 
-Catatan: JWT memakai HS256 dengan secret bersama agar sederhana untuk satu komputer. Untuk produksi: RS256 (public key di service), rotasi refresh token, rate limiting login, dan TLS di depan gateway.
+Catatan: JWT memakai HS256 dengan secret bersama agar sederhana untuk satu komputer.
+Untuk produksi: RS256 (public key di service), rotasi refresh token, rate limiting
+login, dan TLS di depan gateway.
 
 ---
 
-## 10. Troubleshooting
+## 12. Troubleshooting
 
 | Gejala | Penyebab / solusi |
 |---|---|
 | `curl $GW` mengembalikan HTML/404 aneh | Port bentrok (mis. Docker memakai 3000). Set `PORT_GATEWAY` + `GATEWAY_URL` ke port bebas |
-| `EADDRINUSE` | Ada proses lain di port tersebut: `ss -ltnp | grep :3000` |
+| `EADDRINUSE` | Ada proses lain di port tersebut: `ss -ltnp \| grep :3000` |
 | `401 access token kedaluwarsa` | Access token hanya 10 menit — login/refresh ulang |
 | Data ingin direset | `npm run seed` |
 | Sinkron transkrip gagal | Cek log `[nilai]`/`[transkrip]`; pastikan gateway hidup dan `SERVICE_CLIENT_SECRET` sama dengan seed |
 | `403 akses langsung ke service ditolak` | Memang benar: akses harus lewat gateway |
+| Bruno 401 semua request | Environment belum dipilih → pilih **environment** |
+| Bruno token kosong | Jalankan folder 01 lebih dulu |
 
 ---
 
-## 11. Docker (opsional)
+## 13. Docker (opsional)
 
 ```bash
 docker compose up --build -d
@@ -335,4 +450,13 @@ docker compose up --build -d
 docker compose logs -f gateway
 ```
 
-Satu container menjalankan gateway + dua service (sesuai "satu komputer"), DB di volume `zts-db`.
+Satu container menjalankan gateway + dua service (sesuai "satu komputer"), DB di
+volume `zts-db`.
+
+---
+
+## Referensi
+
+Panduan uji manual lengkap (Postman/Bruno, skenario, run sheet rekaman):
+[TUTORIAL-API.md](TUTORIAL-API.md).
+

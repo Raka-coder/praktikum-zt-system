@@ -1,0 +1,34 @@
+info:
+  name: Ubah Nilai Kelas Sendiri (Allow)
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: http://127.0.0.1:3100/nilai/1
+  headers:
+    - name: Authorization
+      value: " Bearer {{dosenToken}}"
+    - name: X-Device-ID
+      value: DEV-DOSEN-01
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "angka": 90
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: console.log("✅ Dosen berhasil mengubah nilai di kelas yang diampu");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -1,0 +1,35 @@
+meta {
+  name: Ubah Nilai Di Luar Jam (Deny)
+  type: http
+  seq: 1
+}
+
+put {
+  url: http://127.0.0.1:3100/nilai/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{dosenToken}}
+  X-Device-ID: DEV-DOSEN-01
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{dosenToken}}
+}
+
+body:json {
+  {
+    "angka": 85
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

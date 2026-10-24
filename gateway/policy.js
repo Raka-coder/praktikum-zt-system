@@ -1,13 +1,5 @@
 'use strict';
 
-/**
- * Policy Engine (PE/PA) — FR-POL.
- * Menerjemahkan 03-RULES §4 menjadi keputusan { allow, reason }.
- *
- * Prinsip: DEFAULT DENY. Kepemilikan data (kelas diampu, NIM, status final)
- * selalu dibaca dari database, bukan dari token atau body request.
- */
-
 const { db } = require('../db/database');
 const { resolveKelas } = require('../lib/kelas');
 

@@ -1,0 +1,28 @@
+meta {
+  name: Lihat Transkrip Teman (Deny)
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://127.0.0.1:3100/transkrip/2024002
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{mhsToken}}
+  X-Device-ID: DEV-MHS-01
+}
+
+auth:bearer {
+  token: {{mhsToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

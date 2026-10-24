@@ -1,0 +1,39 @@
+meta {
+  name: Ubah Nilai Kelas Orang Lain (Deny)
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://127.0.0.1:3100/nilai/3
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{dosenToken}}
+  X-Device-ID: DEV-DOSEN-01
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{dosenToken}}
+}
+
+body:json {
+  {
+    "angka": 100
+  }
+}
+
+script:post-response {
+  console.log("Dosen berhasil mengubah nilai di kelas yang diampu");
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

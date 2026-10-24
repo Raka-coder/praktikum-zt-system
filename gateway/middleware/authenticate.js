@@ -1,10 +1,5 @@
 'use strict';
 
-/**
- * Langkah 2 pipeline (03-RULES §2): verifikasi access token.
- * Tidak ada sesi yang dipercaya — setiap request harus membawa JWT valid.
- */
-
 const jwt = require('jsonwebtoken');
 const { verifyToken } = require('../../lib/tokens');
 const { deny } = require('./audit');

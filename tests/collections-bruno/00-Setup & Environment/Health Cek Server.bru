@@ -1,0 +1,18 @@
+meta {
+  name: Health Cek Server
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:3100/health
+  body: none
+  auth: none
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+}

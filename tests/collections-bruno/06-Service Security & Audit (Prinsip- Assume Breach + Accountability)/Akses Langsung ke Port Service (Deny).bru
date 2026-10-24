@@ -1,0 +1,29 @@
+meta {
+  name: Akses Langsung ke Port Service (Deny)
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:3001/nilai
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{mhsToken}}
+  X-Device-ID: DEV-MHS-01
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{mhsToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

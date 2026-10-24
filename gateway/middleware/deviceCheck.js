@@ -1,11 +1,5 @@
 'use strict';
 
-/**
- * Langkah 3 pipeline (FR-CTX-01): X-Device-ID wajib dan harus terdaftar
- * untuk user pemilik token. Device milik user lain tetap ditolak.
- * Token service melewati langkah ini (tidak ada device).
- */
-
 const { db } = require('../../db/database');
 const { deny } = require('./audit');
 

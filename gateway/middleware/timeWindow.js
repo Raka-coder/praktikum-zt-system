@@ -1,10 +1,5 @@
 'use strict';
 
-/**
- * Middleware langkah 4 pipeline gateway: jam akses untuk aksi yang mengubah nilai.
- * Logikanya ada di lib/timeWindow.js karena dipakai ulang oleh Service Nilai.
- */
-
 const { needsTimeWindow, withinWindow, REASON } = require('../../lib/timeWindow');
 const { deny } = require('./audit');
 

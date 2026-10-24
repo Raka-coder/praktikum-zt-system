@@ -1,12 +1,5 @@
 'use strict';
 
-/**
- * Audit log — FR-AUD-01.
- * Setiap keputusan akses (allow maupun deny) ditulis SATU baris di sini.
- * Modul ini juga menyediakan `deny()` supaya respons penolakan selalu konsisten
- * dan tidak mungkin lupa dicatat.
- */
-
 const config = require('../../lib/config');
 const { db } = require('../../db/database');
 

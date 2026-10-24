@@ -1,0 +1,23 @@
+info:
+  name: Finalisasi Kelas (Allow)
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: http://127.0.0.1:3100/kelas/IF-101-A/finalisasi
+  headers:
+    - name: Authorization
+      value: Bearer {{dosenToken}}
+    - name: X-Device-ID
+      value: DEV-DOSEN-01
+    - name: Content-Type
+      value: application/json
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

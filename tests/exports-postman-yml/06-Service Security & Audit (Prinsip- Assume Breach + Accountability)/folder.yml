@@ -1,0 +1,7 @@
+info:
+  name: "06-Service Security & Audit (Prinsip: Assume Breach + Accountability)"
+  type: folder
+  seq: 7
+
+request:
+  auth: inherit

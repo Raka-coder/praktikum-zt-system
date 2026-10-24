@@ -1,0 +1,7 @@
+info:
+  name: "03-Context Verification (Prinsip: Context Awareness)"
+  type: folder
+  seq: 4
+
+request:
+  auth: inherit

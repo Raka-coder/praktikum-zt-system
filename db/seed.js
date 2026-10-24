@@ -11,7 +11,6 @@ const { db, DB_PATH } = require('./database');
 
 const COST = 10;
 
-/** Jangan cetak secret penuh ke terminal — berguna saat demo direkam. */
 function mask(value) {
   const text = String(value ?? '');
   if (text.length <= 12) return '***';

@@ -1,11 +1,5 @@
 'use strict';
 
-/**
- * Verifikasi ulang JWT di service (FR-AUTH-08).
- * Gateway sudah memeriksa, tapi service tetap "never trust": tanpa token valid
- * request ditolak walaupun membawa X-Gateway-Secret.
- */
-
 const jwt = require('jsonwebtoken');
 const { verifyToken } = require('../../../lib/tokens');
 

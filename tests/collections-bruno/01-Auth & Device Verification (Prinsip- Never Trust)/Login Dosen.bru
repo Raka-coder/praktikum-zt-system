@@ -1,0 +1,40 @@
+meta {
+  name: Login Dosen
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:3100/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Device-ID: DEV-DOSEN-01
+}
+
+body:json {
+  {
+    "username": "dosen01",
+    "password": "Dosen123!"
+  }
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  if (jsonData && jsonData.access_token) {
+    bru.setEnvVar("dosenToken", jsonData.access_token);
+    bru.setEnvVar("accessToken", jsonData.access_token);
+    console.log("dosenToken berhasil disimpan!");
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

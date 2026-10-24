@@ -1,0 +1,38 @@
+info:
+  name: Login Dosen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://127.0.0.1:3100/auth/login
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: X-Device-ID
+      value: DEV-DOSEN-01
+  body:
+    type: json
+    data: |-
+      {
+        "username": "dosen01",
+        "password": "Dosen123!"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        const jsonData = res.getBody();
+        if (jsonData && jsonData.access_token) {
+            bru.setEnvVar("dosenToken", jsonData.access_token);
+            console.log("✅ dosenToken berhasil disimpan!");
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

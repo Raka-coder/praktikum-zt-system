@@ -1,9 +1,5 @@
 'use strict';
 
-/**
- * Verifikasi ulang JWT di Service Transkrip (FR-AUTH-08).
- */
-
 const jwt = require('jsonwebtoken');
 const { verifyToken } = require('../../../lib/tokens');
 

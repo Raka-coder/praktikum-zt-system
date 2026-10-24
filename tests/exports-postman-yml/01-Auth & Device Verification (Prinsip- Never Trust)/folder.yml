@@ -1,0 +1,7 @@
+info:
+  name: "01-Auth & Device Verification (Prinsip: Never Trust)"
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit

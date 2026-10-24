@@ -1,0 +1,32 @@
+meta {
+  name: GET Nilai Kelas Sendiri (Filtered)
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:3100/nilai
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{dosenToken}}
+  X-Device-ID: DEV-DOSEN-01
+}
+
+auth:bearer {
+  token: {{dosenToken}}
+}
+
+script:post-response {
+  console.log("Dosen berhasil melihat daftar nilai kelas yang diampu");
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

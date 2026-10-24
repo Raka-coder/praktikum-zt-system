@@ -1,0 +1,39 @@
+meta {
+  name: Ubah Nilai Kelas Sendiri (Allow)
+  type: http
+  seq: 2
+}
+
+put {
+  url: http://127.0.0.1:3100/nilai/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{dosenToken}}
+  X-Device-ID: DEV-DOSEN-01
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{dosenToken}}
+}
+
+body:json {
+  {
+    "angka": 90
+  }
+}
+
+script:post-response {
+  console.log("Dosen berhasil mengubah nilai di kelas yang diampu");
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

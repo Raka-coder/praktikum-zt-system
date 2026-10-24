@@ -1,0 +1,39 @@
+meta {
+  name: Login Mahasiswa
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://127.0.0.1:3100/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Device-ID: DEV-MHS-01
+}
+
+body:json {
+  {
+    "username": "2024001",
+    "password": "Mhs123!"
+  }
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  if (jsonData && jsonData.access_token) {
+    bru.setEnvVar("mhsToken", jsonData.access_token);
+    console.log("mhsToken berhasil disimpan!");
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

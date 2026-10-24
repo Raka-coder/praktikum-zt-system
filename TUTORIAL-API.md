@@ -245,9 +245,8 @@ dengan Postman).
 
 1. Install Bruno (<https://www.usebruno.com/download>) — GUI/desktop.
 2. **Open Collection** → pilih folder `tests/bruno`.
-3. Di kanan atas pilih environment **Local** (berisi `baseUrl` 3100, ID, dan
-   `serviceClientSecret`).
-4. Jalankan request dari atas ke bawah: **00 - Auth** dulu (4 request), lalu
+3. Di kanan atas pilih environment **environment** (berisi `accessToken`, `mhsToken`, `dosenToken`).
+4. Jalankan request dari atas ke bawah: **00 - Auth** dulu (2 request), lalu
    **01 - Nilai**, **02 - Transkrip**, **03 - Akses langsung**.
 
 ### 4.2 Bagaimana token disimpan
@@ -272,15 +271,7 @@ tests {
 }
 ```
 
-### 4.3 Jalankan lewat CLI (opsional, untuk bukti otomatis)
-
-```bash
-npx @usebruno/cli run tests/bruno -e Local
-```
-
-Semua assertion harus lulus. Ini alternatif ringan tanpa membuka GUI.
-
-### 4.4 Kalau lebih suka import dari Postman
+### 4.3 Kalau lebih suka import dari Postman
 
 Bruno → **Import Collection** → **Postman Collection** → pilih
 `tests/postman_collection.json`. Variable `serviceClientSecret` tetap perlu
@@ -406,7 +397,7 @@ openssl rand -hex 24   # SERVICE_CLIENT_SECRET
 
 Setelah rotasi service secret, perbarui juga:
 
-- `tests/bruno/environments/Local.bru` → `serviceClientSecret`
+- `tests/bruno/environments/environment.yml` → `serviceClientSecret`
 - Postman → collection variable `serviceClientSecret`
   (atau biarkan kosong dan isi manual saat uji)
 
@@ -425,7 +416,7 @@ Setelah rotasi service secret, perbarui juga:
 | 409 `kelas belum difinalisasi` saat sinkron | Sinkron manual sebelum finalisasi | Finalisasi dulu |
 | 403 saat PUT padahal jam kerja | `JAM_MULAI/JAM_SELESAI` salah / TZ | Periksa `.env`, restart |
 | Postman token kosong | Folder Auth belum dijalankan | Jalankan login dulu atau isi variable manual |
-| Bruno 401 semua request | Environment belum dipilih | Pilih **Local** kanan atas |
+| Bruno 401 semua request | Environment belum dipilih | Pilih **environment** kanan atas |
 
 ---
 

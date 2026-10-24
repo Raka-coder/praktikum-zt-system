@@ -1,0 +1,7 @@
+info:
+  name: "02-Least Privilege: Dosen (Prinsip: Least Privilege)"
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit

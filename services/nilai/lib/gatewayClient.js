@@ -1,11 +1,5 @@
 'use strict';
 
-/**
- * Klien internal Service Nilai → Gateway.
- * Sinkron transkrip TIDAK memanggil Service Transkrip langsung, tetapi lewat gateway
- * (sesuai soal: seluruh akses diperiksa gateway, termasuk antar-service).
- */
-
 const config = require('../../../lib/config');
 
 async function requestJson(url, options) {

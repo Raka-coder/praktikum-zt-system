@@ -308,13 +308,7 @@ Koleksi Bruno (sumber utama pengujian manual) ada di **`tests/collections-bruno/
 4. Jalankan request dari atas ke bawah: folder **01-Auth & Device Verification**
    dulu (menyimpan `dosenToken`/`mhsToken`/`accessToken`), lalu folder lain.
 
-### 8.2 Jalankan lewat CLI (opsional)
-
-```bash
-npx @usebruno/cli run tests/collections-bruno -e Local
-```
-
-### 8.3 Alur yang diuji (prinsip zero trust)
+### 8.2 Alur yang diuji (prinsip zero trust)
 
 | Folder | Request | Harapan |
 |---|---|---|
@@ -334,13 +328,13 @@ npx @usebruno/cli run tests/collections-bruno -e Local
 > Folder 04 memfinalisasi IF-101-A. Jalankan dari kondisi bersih
 > (`npm run seed`) agar tidak 403 `kelas sudah difinalisasi`.
 
-### 8.4 Catatan koleksi
+### 8.3 Catatan koleksi
 
 - `tests/collections-bruno/` = sumber utama, file `.bru` native yang selalu diperbarui.
 - `tests/exports-postman-yml/` = snapshot ekspor terakhir (YML) untuk dokumentasi/migrasi; **jangan** dipakai untuk testing aktif.
 - Buka folder `tests/collections-bruno/` langsung dari aplikasi Bruno, tanpa import/export.
 
-### 8.5 Variabel environment
+### 8.4 Variabel environment
 
 | Variable | Sumber |
 |---|---|

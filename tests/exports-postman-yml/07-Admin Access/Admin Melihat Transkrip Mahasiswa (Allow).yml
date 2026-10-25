@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://127.0.0.1:3100/transkrip/2024003
+  url: http://127.0.0.1:3100/transkrip/2024001    # Atur sesuai NIM yg ada
   headers:
     - name: Authorization
       value: Bearer {{adminToken}}

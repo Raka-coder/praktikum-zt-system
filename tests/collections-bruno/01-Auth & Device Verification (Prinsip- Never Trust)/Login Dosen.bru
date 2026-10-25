@@ -26,7 +26,6 @@ script:post-response {
   const jsonData = res.getBody();
   if (jsonData && jsonData.access_token) {
     bru.setEnvVar("dosenToken", jsonData.access_token);
-    bru.setEnvVar("accessToken", jsonData.access_token);
     console.log("dosenToken berhasil disimpan!");
   }
 }

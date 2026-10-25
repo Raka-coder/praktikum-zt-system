@@ -8,7 +8,7 @@ http:
   url: http://127.0.0.1:3100/nilai/1
   headers:
     - name: Authorization
-      value: Bearer {{accessToken}}
+      value: Bearer {{dosenToken}}
     - name: X-Device-ID
       value: DEV-DOSEN-01
     - name: Content-Type

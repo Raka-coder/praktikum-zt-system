@@ -1,8 +1,6 @@
 name: environment
 variables:
-  - name: accessToken
+  - name: dosenToken
     value: ""
   - name: mhsToken
-    value: ""
-  - name: dosenToken
     value: ""

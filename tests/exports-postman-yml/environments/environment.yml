@@ -2,5 +2,10 @@ name: environment
 variables:
   - name: dosenToken
     value: ""
+    description: ""
   - name: mhsToken
     value: ""
+    description: ""
+  - name: adminToken
+    value: ""
+    description: ""

@@ -304,9 +304,10 @@ Koleksi Bruno (sumber utama pengujian manual) ada di **`tests/collections-bruno/
 
 1. Install Bruno (<https://www.usebruno.com/download>).
 2. **Open Collection** → pilih folder `tests/collections-bruno`.
-3. Pilih environment **environment** (kanan atas).
-4. Jalankan request dari atas ke bawah: folder **01-Auth & Device Verification**
-   dulu (menyimpan `dosenToken`/`mhsToken`/`accessToken`), lalu folder lain.
+3. Pilih environment **Local** (kanan atas).
+4. Jalankan folder **01-Auth & Device Verification** dulu (menyimpan
+   `dosenToken`/`mhsToken`), lalu **07-Admin Access** untuk `adminToken`,
+   baru folder lain.
 
 ### 8.2 Alur yang diuji (prinsip zero trust)
 
@@ -324,6 +325,8 @@ Koleksi Bruno (sumber utama pengujian manual) ada di **`tests/collections-bruno/
 | | Lihat Transkrip Teman (Deny) | 403 |
 | 06-Service Security & Audit | Akses Langsung ke Port Service (Deny) | 403 |
 | | Akses Langsung dengan Secret Tapi Tanpa Token (Deny) | 401/403 |
+| 07-Admin Access | Login Admin | 200, `adminToken` tersimpan |
+| | Admin Melihat Transkrip Mahasiswa (Allow) | 200 |
 
 > Folder 04 memfinalisasi IF-101-A. Jalankan dari kondisi bersih
 > (`npm run seed`) agar tidak 403 `kelas sudah difinalisasi`.
@@ -338,9 +341,9 @@ Koleksi Bruno (sumber utama pengujian manual) ada di **`tests/collections-bruno/
 
 | Variable | Sumber |
 |---|---|
-| `accessToken` | diset oleh Login Dosen |
 | `dosenToken` | diset oleh Login Dosen |
 | `mhsToken` | diset oleh Login Mahasiswa |
+| `adminToken` | diset oleh Login Admin (folder 07) |
 | `GATEWAY_SECRET` | dibaca dari `process.env` (Bruno) |
 
 ---
@@ -395,8 +398,8 @@ Setiap keputusan allow/deny tercatat: subjek, endpoint, device, alasan, IP.
 ├── tests/
 │   ├── e2e.sh
 │   ├── postman_collection.json
-│   └── collections-bruno/                # koleksi Bruno (opencollection)
-│   └── result-bruno-yml/                 # hasil koleksi Bruno (manual dari uji pada Bruno)
+│   ├── collections-bruno/                # sumber utama (file .bru native)
+│   └── exports-postman-yml/              # snapshot ekspor YML (dokumentasi/migrasi)
 ```
 
 ---
@@ -431,7 +434,7 @@ login, dan TLS di depan gateway.
 | Data ingin direset | `npm run seed` |
 | Sinkron transkrip gagal | Cek log `[nilai]`/`[transkrip]`; pastikan gateway hidup dan `SERVICE_CLIENT_SECRET` sama dengan seed |
 | `403 akses langsung ke service ditolak` | Memang benar: akses harus lewat gateway |
-| Bruno 401 semua request | Environment belum dipilih → pilih **environment** |
+| Bruno 401 semua request | Environment belum dipilih → pilih **Local** |
 | Bruno token kosong | Jalankan folder 01 lebih dulu |
 
 ---

@@ -1,0 +1,39 @@
+meta {
+  name: Login Admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:3100/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Device-ID: DEV-ADMIN-01
+}
+
+body:json {
+  {
+    "username": "admin01",
+    "password": "Admin123!"
+  }
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  if (jsonData && jsonData.access_token) {
+    bru.setEnvVar("adminToken", jsonData.access_token);
+    console.log("adminToken berhasil disimpan!");
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

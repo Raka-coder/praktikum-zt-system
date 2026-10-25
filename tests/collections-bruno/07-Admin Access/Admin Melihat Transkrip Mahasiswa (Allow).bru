@@ -1,0 +1,28 @@
+meta {
+  name: Admin Melihat Transkrip Mahasiswa (Allow)
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://127.0.0.1:3100/transkrip/2024003
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+  X-Device-ID: DEV-ADMIN-01
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+}

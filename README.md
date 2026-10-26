@@ -83,6 +83,8 @@ curl http://127.0.0.1:3000/health
 
 ## 2. Arsitektur
 
+[![Architecture diagram of raka-coder/praktikum-zt-system](https://gitdiagram.com/raka-coder/praktikum-zt-system/diagram.png)](https://gitdiagram.com/raka-coder/praktikum-zt-system?utm_source=readme&utm_medium=picture)
+
 ```mermaid
 flowchart LR
   Client["Client<br/>(Bruno / curl)<br/>Bearer + X-Device"] -->|"HTTP"| GW["API Gateway :3000<br/>= PEP (+ PE / PA)"]
@@ -236,13 +238,13 @@ curl -i http://127.0.0.1:3001/nilai -H 'X-Gateway-Secret: <GATEWAY_SECRET>'
 Ubah `.env` sementara:
 
 ```env
-JAM_MULAI=0
+JAM_MULAI=0        # jam boleh di set bebas
 JAM_SELESAI=0      # rentang kosong → semua perubahan ditolak
 ```
 
 Restart `npm start`, lalu `PUT /nilai/1` →
 `403 perubahan nilai hanya diizinkan pukul 00.00–00.00 (di luar jam akses)`.
-Kembalikan ke `7` dan `21` setelah demo.
+Kembalikan jam ke `7` dan `21` setelah demo.
 
 ---
 
@@ -275,7 +277,7 @@ Import `tests/postman_collection.json`, jalankan folder **00 - Auth** lebih dulu
 (menyimpan token ke collection variable), lalu folder lain.
 `baseUrl` default `http://127.0.0.1:3000`.
 
-### Manual (skenario 03-RULES §8)
+### Manual
 
 | No | Aksi | Harapan |
 |---|---|---|
@@ -363,43 +365,118 @@ Setiap keputusan allow/deny tercatat: subjek, endpoint, device, alasan, IP.
 ## 10. Struktur folder
 
 ```
-├── README.md
-├── .env.example
-├── package.json
-├── docker-compose.yml
-├── Dockerfile
-├── lib/                      # konfigurasi, JWT, jam akses, helper kelas
-│   ├── config.js
-│   ├── tokens.js
-│   ├── timeWindow.js
-│   └── kelas.js
 ├── db/
+│   ├── database.js
 │   ├── schema.sql
-│   ├── seed.js
-│   └── database.js
+│   └── seed.js
 ├── gateway/
-│   ├── server.js             # PEP + proxy
-│   ├── policy.js             # Policy Engine: allow/deny + alasan
-│   ├── middleware/{authenticate,deviceCheck,timeWindow,audit}.js
-│   └── routes/auth.js
+│   ├── middleware/
+│   │   ├── audit.js
+│   │   ├── authenticate.js
+│   │   ├── deviceCheck.js
+│   │   └── timeWindow.js
+│   ├── routes/
+│   │   └── auth.js
+│   ├── policy.js
+│   └── server.js
+├── lib/
+│   ├── config.js
+│   ├── kelas.js
+│   ├── timeWindow.js
+│   └── tokens.js
+├── scripts/
+│   ├── audit.js
+│   └── start-all.js
 ├── services/
 │   ├── nilai/
-│   │   ├── server.js
-│   │   ├── lib/gatewayClient.js   # ambil token service + sinkron via gateway
-│   │   ├── middleware/{gatewaySecret,verifyToken}.js
-│   │   └── routes/nilai.js
+│   │   ├── lib/
+│   │   │   └── gatewayClient.js
+│   │   ├── middleware/
+│   │   │   ├── gatewaySecret.js
+│   │   │   └── verifyToken.js
+│   │   ├── routes/
+│   │   │   └── nilai.js
+│   │   └── server.js
 │   └── transkrip/
-│       ├── server.js
-│       ├── middleware/{gatewaySecret,verifyToken}.js
-│       └── routes/transkrip.js
-├── scripts/
-│   ├── start-all.js
-│   └── audit.js
+│       ├── middleware/
+│       │   ├── gatewaySecret.js
+│       │   └── verifyToken.js
+│       ├── routes/
+│       │   └── transkrip.js
+│       └── server.js
 ├── tests/
+│   ├── collections-bruno/
+│   │   ├── 00-Setup & Environment/
+│   │   │   └── Health Cek Server.bru
+│   │   ├── 01-Auth & Device Verification (Prinsip- Never Trust)/
+│   │   │   ├── Login Dosen.bru
+│   │   │   └── Login Mahasiswa.bru
+│   │   ├── 02-Least Privilege- Dosen (Prinsip- Least Privilege)/
+│   │   │   ├── GET Nilai Kelas Sendiri (Filtered).bru
+│   │   │   ├── Ubah Nilai Kelas Orang Lain (Deny).bru
+│   │   │   └── Ubah Nilai Kelas Sendiri (Allow).bru
+│   │   ├── 03-Context Verification (Prinsip- Context Awareness)/
+│   │   │   └── Ubah Nilai Di Luar Jam (Deny).bru
+│   │   ├── 04-Inter-Service Communication (Prinsip- Assume Breach)/
+│   │   │   └── Finalisasi Kelas (Allow).bru
+│   │   ├── 05-Least Privilege- Mahasiswa (Prinsip- Least Privilege)/
+│   │   │   ├── Lihat Transkrip Sendiri (Allow).bru
+│   │   │   └── Lihat Transkrip Teman (Deny).bru
+│   │   ├── 06-Service Security & Audit (Prinsip- Assume Breach + Accountability)/
+│   │   │   ├── Akses Langsung dengan Secret Tapi Tanpa Token (Deny).bru
+│   │   │   └── Akses Langsung ke Port Service (Deny).bru
+│   │   ├── 07-Admin Access/
+│   │   │   ├── Admin Melihat Transkrip Mahasiswa (Allow).bru
+│   │   │   └── Login Admin.bru
+│   │   ├── environments/
+│   │   │   └── Local.bru
+│   │   └── bruno.json
+│   ├── exports-postman-yml/
+│   │   ├── 00-Setup & Environment/
+│   │   │   ├── folder.yml
+│   │   │   └── Health Cek Server.yml
+│   │   ├── 01-Auth & Device Verification (Prinsip- Never Trust)/
+│   │   │   ├── folder.yml
+│   │   │   ├── Login Dosen.yml
+│   │   │   └── Login Mahasiswa.yml
+│   │   ├── 02-Least Privilege- Dosen (Prinsip- Least Privilege)/
+│   │   │   ├── folder.yml
+│   │   │   ├── GET Nilai Kelas Sendiri (Filtered).yml
+│   │   │   ├── Ubah Nilai Kelas Orang Lain (Deny).yml
+│   │   │   └── Ubah Nilai Kelas Sendiri (Allow).yml
+│   │   ├── 03-Context Verification (Prinsip- Context Awareness)/
+│   │   │   ├── folder.yml
+│   │   │   └── Ubah Nilai Di Luar Jam (Deny).yml
+│   │   ├── 04-Inter-Service Communication (Prinsip- Assume Breach)/
+│   │   │   ├── Finalisasi Kelas (Allow).yml
+│   │   │   └── folder.yml
+│   │   ├── 05-Least Privilege- Mahasiswa (Prinsip- Least Privilege)/
+│   │   │   ├── folder.yml
+│   │   │   ├── Lihat Transkrip Sendiri (Allow).yml
+│   │   │   └── Lihat Transkrip Teman (Deny).yml
+│   │   ├── 06-Service Security & Audit (Prinsip- Assume Breach + Accountability)/
+│   │   │   ├── Akses Langsung dengan Secret Tapi Tanpa Token (Deny).yml
+│   │   │   ├── Akses Langsung ke Port Service (Deny).yml
+│   │   │   └── folder.yml
+│   │   ├── 07-Admin Access/
+│   │   │   ├── Admin Melihat Transkrip Mahasiswa (Allow).yml
+│   │   │   ├── folder.yml
+│   │   │   └── Login Admin.yml
+│   │   ├── environments/
+│   │   │   └── environment.yml
+│   │   ├── .gitignore
+│   │   └── opencollection.yml
 │   ├── e2e.sh
-│   ├── postman_collection.json
-│   ├── collections-bruno/                # sumber utama (file .bru native)
-│   └── exports-postman-yml/              # snapshot ekspor YML (dokumentasi/migrasi)
+│   └── postman_collection.json
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── package-lock.json
+├── package.json
+├── README.md
+└── TUTORIAL-API.md
+
 ```
 
 ---
